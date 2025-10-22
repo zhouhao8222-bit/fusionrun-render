@@ -1,12 +1,11 @@
 /**
  * FusionRun Cloud V10.8
- * fetchOkx.js — OKX + CoinGlass 组合接口
- * 保留逻辑一致，仅改接口访问方式
+ * fetchOkx.js — OKX + CoinGlass 组合接口（已更新 /api/pro/v1 路径）
  */
 
 import fetch from 'node-fetch';
 
-// ✅ 内置 CoinGlass API Key（无需配置环境变量）
+// ✅ 内置 CoinGlass API Key（可被环境变量覆盖）
 const COINGLASS_KEY = process.env.COINGLASS_API_KEY || '71ff539b-a45f-4b3f-b982-f569799c30ef';
 
 // OKX 基础地址
@@ -35,21 +34,22 @@ async function fetchJson(url, headers = {}) {
 export async function getOkxFunding(instId = 'BTC-USDT-SWAP') {
   const symbol = instId.split('-')[0];
 
-  // --- Step 1: 尝试 CoinGlass 接口 ---
+  // --- Step 1: 尝试 CoinGlass 接口（已更新为 /api/pro/v1/futures/funding_rates） ---
   try {
-    const url = `https://open-api.coinglass.com/api/futures/funding_rate?symbol=${symbol}&exchange=OKX`;
+    const url = `https://open-api.coinglass.com/api/pro/v1/futures/funding_rates?symbol=${symbol}&exchange=OKX`;
     const cgRes = await fetch(url, { headers: { 'coinglassSecret': COINGLASS_KEY } });
     if (!cgRes.ok) throw new Error(`CoinGlass ${cgRes.status}`);
     const cgJson = await cgRes.json();
-    const rate = cgJson?.data?.[0]?.fundingRate;
+
+    const rate = cgJson?.data?.[0]?.fundingRate ?? cgJson?.data?.fundingRate;
     if (rate !== undefined && rate !== null) {
-      return { fundingRate: rate, source: 'CoinGlass' };
+      return { fundingRate: Number(rate), source: 'CoinGlass' };
     }
   } catch (err) {
     console.log(`[CoinGlass Fallback] ${err.message}`);
   }
 
-  // --- Step 2: 回退至 OKX 原生接口 ---
+  // --- Step 2: 回退至 OKX 原生接口（防403 UA头） ---
   try {
     const okxUrl = `${OKX_BASE}/api/v5/public/funding-rate?instId=${encodeURIComponent(instId)}`;
     const okxJson = await fetchJson(okxUrl);
@@ -66,16 +66,16 @@ export async function getOkxFunding(instId = 'BTC-USDT-SWAP') {
 }
 
 /**
- * ✅ 同时增加持仓 / OI 变化接口（双源）
+ * ✅ 同时增加持仓 / OI 变化接口（已更新为 /api/pro/v1/futures/open_interest）
  */
 export async function getOiDelta(symbol = 'BTC') {
   // 先试 CoinGlass
   try {
-    const url = `https://open-api.coinglass.com/api/futures/openInterest?symbol=${symbol}&exchange=OKX`;
+    const url = `https://open-api.coinglass.com/api/pro/v1/futures/open_interest?symbol=${symbol}&exchange=OKX`;
     const res = await fetch(url, { headers: { 'coinglassSecret': COINGLASS_KEY } });
     if (!res.ok) throw new Error(`CoinGlass ${res.status}`);
     const j = await res.json();
-    const value = j?.data?.[0]?.value ?? 0;
+    const value = j?.data?.[0]?.value ?? j?.data?.value ?? 0;
     return { oiDelta: Number(value), source: 'CoinGlass' };
   } catch (e) {
     console.log(`[CoinGlass OIΔ Error] ${e.message}`);
