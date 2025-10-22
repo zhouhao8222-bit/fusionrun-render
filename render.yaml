@@ -1,0 +1,14 @@
+# Render deploy configuration for FusionRun Node.js
+services:
+  - type: web
+    name: fusionrun-node
+    env: node
+    plan: free
+    region: singapore
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    envVars:
+      - key: APP_NAME
+        value: FusionRun
+      - key: APP_MODE
+        value: production

@@ -1,0 +1,14 @@
+{
+  "name": "fusionrun-node",
+  "version": "11.3.0",
+  "description": "FusionRun Node.js (Render deploy version V11.3_FusionRun)",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
