@@ -1,14 +1,14 @@
 {
-  "name": "fusionrun-node",
-  "version": "11.3.0",
-  "description": "FusionRun Node.js (Render deploy version V11.3_FusionRun)",
-  "main": "server.js",
+  "name": "fusionrun-cloud-v10-8",
+  "version": "10.8.0",
+  "description": "FusionRun V10.8 FullCloud (Render/Cloud Run ready)",
   "type": "module",
+  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2"
   }
 }

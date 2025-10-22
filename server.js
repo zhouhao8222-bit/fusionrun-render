@@ -1,27 +1,30 @@
 import express from 'express';
-const app = express();
+import { getFusionSignals } from './fusionSignal.js';
 
-// ✅ Render 要求使用平台分配的端口
+const app = express();
 const PORT = process.env.PORT || 10000;
 
 app.get('/', (req, res) => {
   res.json({
-    message: 'Hello from FusionRun Node.js on Render!',
-    version: 'V11.3_FusionRun',
-    env: {
-      APP_NAME: process.env.APP_NAME || 'FusionRun',
-      APP_MODE: process.env.APP_MODE || 'production',
-      PORT: PORT
-    },
+    message: 'FusionRun Cloud V10.8',
+    version: 'V10.8_FusionSignal_FullCloud',
+    endpoints: ['/api/signal', '/healthz', '/readyz'],
     now: new Date().toISOString()
   });
 });
 
-app.get('/healthz', (req, res) => res.json({ ok: true }));
-app.get('/readyz', (req, res) => res.json({ ready: true }));
-app.get('/api/ping', (req, res) => res.json({ ping: 'pong' }));
+app.get('/api/signal', async (req, res) => {
+  try {
+    const signals = await getFusionSignals();
+    res.json({ updated: new Date().toISOString(), version: 'V10.8_FusionSignal_FullCloud', signals });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-// ✅ 关键：监听 Render 提供的端口
+app.get('/healthz', (_, res) => res.json({ ok: true }));
+app.get('/readyz',  (_, res) => res.json({ ready: true }));
+
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ FusionRun service listening on port ${PORT}`);
+  console.log(`✅ FusionRun Cloud server running on port ${PORT}`);
 });
