@@ -21,3 +21,33 @@ import('./fusionSignal.js').then(module => {
 
 // ✅ 马上启动监听（Render只看这一句）
 app.listen(PORT, () => console.log(`✅ FusionRun Cloud running on ${PORT}`));
+
+// =============== 调试路由：OKX 主行情 ===============
+import { getOkxTicker, getOkxOpenInterest, getOkxMarkPrice } from './fetchOkx.js';
+
+app.get('/debug/okx', async (req, res) => {
+  try {
+    const instId = req.query.instId || 'BTC-USDT-SWAP';
+    const [ticker, oi, mark] = await Promise.all([
+      getOkxTicker(instId),
+      getOkxOpenInterest(instId),
+      getOkxMarkPrice(instId)
+    ]);
+    res.json({ instId, ticker, oi, mark });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============== 调试路由：Funding (CoinGlass v4) ===============
+import { getFundingRate } from './fetchOkx.js';
+
+app.get('/debug/funding', async (req, res) => {
+  try {
+    const symbol = req.query.symbol || 'BTC';
+    const data = await getFundingRate(symbol, 'OKX');
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
