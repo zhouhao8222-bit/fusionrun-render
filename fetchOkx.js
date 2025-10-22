@@ -127,3 +127,5 @@ export async function getOkxCandles(instId = "BTC-USDT-SWAP", bar = "3600", limi
 // 导出统一接口
 // ========================
 export { fetchJson };
+// 兼容旧版本函数名
+export const getOkxFunding = getFundingRate;
